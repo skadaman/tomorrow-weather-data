@@ -18,7 +18,6 @@ now = dt.datetime.now(pytz.UTC)
 future_end_time = (now + dt.timedelta(days=+5)).isoformat()
 
 # Intialize class
-## DELETE ##
 #api_key = ''
 api = APIData(api_key, logger) 
 try:
