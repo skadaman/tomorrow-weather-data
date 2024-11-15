@@ -5,8 +5,10 @@ services:
     ports:
       - "5432:5432"
     environment:
+      PGHOST: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      PGPORT: 5432
       POSTGRES_DB: tomorrow
     volumes:
       - "${PWD}/scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql"
@@ -53,6 +55,5 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
 volumes:
   pgdata:

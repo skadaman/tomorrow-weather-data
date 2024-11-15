@@ -22,13 +22,19 @@ The data is pulled for 10 locations:
 | 25.9400 | -97.4800 |
 | 25.9400 | -97.4400 |
 
+To execute the system users just need to run `docker compose up --build` and can clean up the system with `docker compose down -v`
+
+The python notebook is accesible through [localhost:8888](http://localhost:8888). 
+
 ## Database Information
 The data is then stored in a postgress sql db with the following schema:
 ![alt text](image.png)
 
-The database structure was setup in a long format (a field name and a value column) so that if the fields that are pull can change without having to change the schema of the table. Additionally, if in the future the different types of data were required to be split out into their own tables then that migration would be straight forward with this format. Although the dimensionality of the historical weather table and the forecasted weather table is the same the data was kept in separate tables because it comes from different sources. If at any point the endpoint where to change or a new schema was required for the different kinds of data then this approach is more robust to changes. 
+The database structure was setup in a long format (a field name and a value column) so that if the fields that are pull can change without having to change the schema of the table. Additionally, if in the future the different types of data were required to be split out into their own tables then that migration would be straight forward with this format. Although the dimensionality of the historical weather table and the forecasted weather table is the same the data was kept in separate tables because it comes from different sources. If at any point the endpoint where to change or a new schema was required for the different kinds of data then this approach is more robust to changes.
 
-Indexes are set up envisioning what frequent querying of these tables could look like. For example querying the data by date is optimized by having these indexes. 
+Indexes are set up envisioning what frequent querying of these tables could look like. For example querying the data by date is optimized by having these indexes.
+
+Locations are saved in geojson as that is the best way to store location data. Having the data in this format would lend itself to some other applications such as mapping.
 
 ## Python API Code
 
@@ -41,7 +47,7 @@ The code flow can be summarized in the following steps:
 3. Iterate through each location.
     a. Pull historical weather from tomorrow.io
     b. Pull forecasted weather from tomorrow.io
-    c. UPSERT the data into the db. 
+    c. UPSERT the data into the db.
 
 I acknowledge that saving API keys in repos is not best practice. The api key should be saved in a secret manager such as EnvKey or AKV then passed as env variable.
 
@@ -49,9 +55,15 @@ The db functions are set up as standalone functions. I could have set that up as
 
 The APIData class is meant to facilitate the API calls. By storing the urls and other constants as objects for the class we can keep the code clean and only update the code in a single place, for example an API url were to change. This design was also meant to facilitate the passing of the API key across functions. 
 
-I wrap all db connections and API calls in try-catch statements so that we can handle those exceptions coming from third parties cleanly. In the db case we can rollback changes and so forth. 
+I wrap all db connections and API calls in try-catch statements so that we can handle those exceptions coming from third parties cleanly. In the db case we can rollback changes and so forth. Additionally, I saw the hint to use pytest. For this case I opted to use a custom function to check for data quality rather than using the pytest framework.  
 
 To keep the code simple I am just using a for-loop to iterate through the different locations. However, this could would be easily adaptable to a async multi-threaded approach where the data for each node could be pulled in parallel. Since the data we are pulling is not very big and the api key is limited to 3 requests per second that seemed like overkill. 
 
+## Python Notebook
+
+The python notebook is very bare bones, but I believe the point of the exercise is to demonstrate a system with a front end and a back end and the flow of data between those. I think the notebook has enough to accomplish that. 
 
 
+Users should be able to get to a simple time series plot with some interactive drop downs that allow them to pick the field and geolocation of interest. The plots could be further enhanced by adding some labels that match the corresponding lat,longs to the nearest city so that the plot were more informative. 
+
+Users could potentially use the query function in the notebook to submit any select query if they wanted to do any more data exploration or aggregation. The generalized function for queries gives the notebook a bit more power than just the plot displayed.

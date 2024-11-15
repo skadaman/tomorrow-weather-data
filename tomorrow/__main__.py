@@ -7,7 +7,7 @@ sys.path.append(parent_dir)
 from tomorrow import api_key#, weather_locations
 from tomorrow.api import APIData
 import pytz
-from db import get_connection, get_weather_locations, upsert_weather_data
+from tomorrow.db import get_connection, get_weather_locations, upsert_weather_data
 
 # configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
@@ -17,8 +17,6 @@ logger.info("Starting data pull from Tomorrow.io ")
 now = dt.datetime.now(pytz.UTC)
 future_end_time = (now + dt.timedelta(days=+5)).isoformat()
 
-# Intialize class
-#api_key = ''
 api = APIData(api_key, logger) 
 try:
    db_conn =  get_connection()

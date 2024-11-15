@@ -1,5 +1,3 @@
-
-import datetime as dt
 import pytz
 import requests
 import pandas as pd
@@ -25,8 +23,29 @@ class APIData:
                             ]
         self.logger = logger
 
-    """ A function which given a location and dates will pull historical weather data"""
+    """ Function to test all temperature values are within the valid range (-128°F to 134°F)"""
+    @staticmethod
+    def temperature_values_in_range(df):
+        # Filter data to temp field
+        temp_data = df[df['field'] == 'temperature']
+        
+        # Get any values outside the valid range (highest and lowest temps recorded.)
+        invalid_temps = temp_data[
+            (temp_data['value'] > 134.1) | 
+            (temp_data['value'] < -128.6 )
+        ]
+        
+        # Error message
+        if not invalid_temps.empty:
+            error_details = invalid_temps.apply(
+                lambda row: f"ID: {row['id']}, DateTime: {row['datetime']}, Value: {row['value']}",
+                axis=1
+            ).values
+            
+            error_msg = "\nInvalid temperature values found:\n" + "\n".join(error_details)
+            logger.warning(error_msg)
 
+    """ A function which given a location and dates will pull historical weather data"""
     def get_historical_data(self, location, start_date, end_date):
 
         body = {"location": f"{location['lat']},{location['lon']}", 
@@ -74,6 +93,8 @@ class APIData:
         data = response.json()
         data = data["timelines"]["hourly"]
         df = self.parse_data(data)
+        # Check data for bad temps. 
+        APIData.temperature_values_in_range(df)
         return df
 
     """ A function to pull forecasts for a given location and dates """
@@ -99,6 +120,8 @@ class APIData:
         data = response.json()
         data = data["timelines"]["hourly"]
         df = self.parse_data(data)
+        # Check data for bad temps.
+        APIData.temperature_values_in_range(df)
         return df
 
     """Function to take response parse it into a dataframe"""
@@ -120,3 +143,4 @@ class APIData:
         df = pd.DataFrame(flattened_data)
 
         return df
+

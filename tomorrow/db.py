@@ -29,25 +29,20 @@ def get_connection():
 
     return db_conn
 
-# Function to execute queries via cursor. 
-def execute_query(db_conn, query):
+''' Function to run data pulling queries, returns data frames from queried tables.'''
+def execute_data_query(db_conn, query):
     logger = logging.getLogger(__name__)
     logger.info("Running Database Query")
     try:
-        cursor = db_conn.cursor()
-        cursor.execute(query)
-        db_conn.commit()
+        queryDF = pdSQL.read_sql_query(query, db_conn)
+        return queryDF
     except pg.Error as e:
         logger.error(e)
         db_conn.rollback()  # Roll back in case of error
-    finally:
-        cursor.close()
 
+""" Function to UPSERT weather data to either of the weather tables."""
 def upsert_weather_data(df, location_id, db_conn, table):
-    """
-    Upload weather data to the historical_weather table.
-    """
-    
+
     # Convert DataFrame to list of tuples for faster insertion
     records = [
         (location_id, row['datetime'], row['field'], row['value'])
@@ -63,8 +58,7 @@ def upsert_weather_data(df, location_id, db_conn, table):
     VALUES (%s, %s, %s, %s)
     ON CONFLICT (id, datetime, field) 
     DO UPDATE SET 
-        value = EXCLUDED.value,
-        update_stamp = CURRENT_TIMESTAMP
+        value = EXCLUDED.value
     """             
     try:
         cursor.executemany(insert_query, records)
@@ -81,34 +75,32 @@ def upsert_weather_data(df, location_id, db_conn, table):
         cursor.close()
 
 def get_weather_locations(db_conn):
-   """
-   Pull locations from database and format into dictionary matching:
-   {
-       "1": {"lat": 25.8600, "lon": -97.4200},
-       "2": {"lat": 25.9000, "lon": -97.5200},
-       ...
-   }
-   """
-   logger = logging.getLogger(__name__)
-   try:
-       cursor = db_conn.cursor()
-       
-       query = """
-       SELECT id, geojson 
-       FROM locations 
-       ORDER BY id;
-       """
-       
-       cursor.execute(query)
-       rows = cursor.fetchall()
-    except pg.Error as e:
-       logger.error(f"Database error: {str(e)}")
-       raise
-       
-   finally:
-       cursor.close()
-    
+    """
+    Pull locations from database and format into dictionary matching:
+    {
+        "1": {"lat": 25.8600, "lon": -97.4200},
+        "2": {"lat": 25.9000, "lon": -97.5200},
+        ...
+    }
+    """
 
+    logger = logging.getLogger(__name__)
+    try:
+        cursor = db_conn.cursor()
+        query = """
+        SELECT id, geojson 
+        FROM locations 
+        ORDER BY id;
+        """
+
+        cursor.execute(query)
+        rows = cursor.fetchall()
+    except pg.Error as e:
+        logger.error(f"Database error: {str(e)}")
+        raise
+    finally:
+        cursor.close()
+    
     # Format into dictionary
     locations = {}
     for row in rows:

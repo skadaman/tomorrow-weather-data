@@ -23,8 +23,7 @@ database at the end.
 Design the system to answer the following questions using SQL:
 
 * What's the latest temperature for each geolocation? What's the latest wind speed?
-* Show an hourly time series of temperature (or any other available weather variable) from a day ago to 5 days in the
-  future for a selected location.
+* Show an hourly time series of temperature (or any other available weather variable) from a day ago to 5 days in the future for a selected location.
 
 ## Considerations
 

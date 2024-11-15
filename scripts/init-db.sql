@@ -13,7 +13,7 @@ CREATE TABLE historical_weather (
     datetime TIMESTAMP NOT NULL,
     field VARCHAR(100) NOT NULL,
     value NUMERIC NOT NULL,
-    update_stamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    --update_stamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id, datetime, field)
 );
 
@@ -27,7 +27,7 @@ CREATE TABLE forecast_weather (
     datetime TIMESTAMP NOT NULL,
     field VARCHAR(100) NOT NULL,
     value NUMERIC NOT NULL,
-    update_stamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    --update_stamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id, datetime, field)
 );
 
