@@ -7,7 +7,7 @@ from datetime import datetime
 
 class APIData:
     """ Initializing some fixed values. """
-    def __init__(self, key, logger):
+    def __init__(self, key: str, logger):
         self.key = key
         self.units = "imperial"
         self.timesteps = "1h"
@@ -25,7 +25,7 @@ class APIData:
 
     """ Function to test all temperature values are within the valid range (-128°F to 134°F)"""
     @staticmethod
-    def temperature_values_in_range(df):
+    def temperature_values_in_range(df: pd.DataFrame):
         # Filter data to temp field
         temp_data = df[df['field'] == 'temperature']
         
@@ -46,7 +46,7 @@ class APIData:
             logger.warning(error_msg)
 
     """ A function which given a location and dates will pull historical weather data"""
-    def get_historical_data(self, location, start_date, end_date):
+    def get_historical_data(self, location: dict, start_date: datetime , end_date: datetime) -> pd.DataFrame:
 
         body = {"location": f"{location['lat']},{location['lon']}", 
                 "fields": self.data_fields, 
@@ -74,11 +74,12 @@ class APIData:
             df = pd.json_normalize(item)
         df.rename(columns={'startTime': 'Date'}, inplace=True)
         df.Date = pd.to_datetime(df['Date'], format='%Y-%m-%d:%HH:%MM')
+        return df 
 
 
     """ A function which given a location and dates will pull historical weather data"""
 
-    def get_hist_recent_data(self, location):
+    def get_hist_recent_data(self, location: dict) -> pd.DataFrame:
 
         location_str = f"{location['lat']},{location['lon']}"
         try:
@@ -98,7 +99,7 @@ class APIData:
         return df
 
     """ A function to pull forecasts for a given location and dates """
-    def get_forecast_data(self, location, start_date, end_date):
+    def get_forecast_data(self, location: dict, start_date: datetime, end_date: datetime) -> pd.DataFrame:
 
         params = {"location": f"{location['lat']},{location['lon']}", 
                 "fields": self.data_fields, 
@@ -125,7 +126,7 @@ class APIData:
         return df
 
     """Function to take response parse it into a dataframe"""
-    def parse_data(self, data):
+    def parse_data(self, data) -> pd.DataFrame:
         df = pd.DataFrame()
         flattened_data = []
 

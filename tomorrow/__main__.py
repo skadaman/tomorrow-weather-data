@@ -4,7 +4,7 @@ import sys
 import datetime as dt
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-from tomorrow import api_key#, weather_locations
+from tomorrow import api_key
 from tomorrow.api import APIData
 import pytz
 from tomorrow.db import get_connection, get_weather_locations, upsert_weather_data

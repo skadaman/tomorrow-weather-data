@@ -1,6 +1,7 @@
 import os
 import psycopg2 as pg
 import pandas.io.sql as pdSQL
+from pandas.core.frame import DataFrame
 import logging 
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ def get_connection():
     return db_conn
 
 ''' Function to run data pulling queries, returns data frames from queried tables.'''
-def execute_data_query(db_conn, query):
+def execute_data_query(db_conn, query: str):
     logger = logging.getLogger(__name__)
     logger.info("Running Database Query")
     try:
@@ -41,7 +42,7 @@ def execute_data_query(db_conn, query):
         db_conn.rollback()  # Roll back in case of error
 
 """ Function to UPSERT weather data to either of the weather tables."""
-def upsert_weather_data(df, location_id, db_conn, table):
+def upsert_weather_data(df: DataFrame, location_id: str, db_conn, table: str):
 
     # Convert DataFrame to list of tuples for faster insertion
     records = [
@@ -74,7 +75,7 @@ def upsert_weather_data(df, location_id, db_conn, table):
     finally:
         cursor.close()
 
-def get_weather_locations(db_conn):
+def get_weather_locations(db_conn) -> dict:
     """
     Pull locations from database and format into dictionary matching:
     {
